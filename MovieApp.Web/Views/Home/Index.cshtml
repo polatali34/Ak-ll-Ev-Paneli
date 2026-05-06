@@ -1,0 +1,174 @@
+﻿@model MovieApp.Web.Models.EvDurumu
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Paneli | @Model.KullaniciAdi</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); } 
+    </style>
+</head>
+<body>
+
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold">
+                <i class="bi bi-cpu-fill text-primary"></i> Akıllı Ev Kontrol Paneli
+            </span>
+            <div class="d-flex text-white">
+                <span class="me-3"><i class="bi bi-person-badge"></i> Operatör: @Model.KullaniciAdi</span>
+                
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body d-flex justify-content-around bg-white rounded-4">
+                        <div class="text-center">
+                            <h6 class="text-muted"><i class="bi bi-wifi text-success"></i> Sinyal</h6>
+                            <h5 class="mb-0 fw-bold">@Model.BaglantiKalitesi</h5>
+                        </div>
+                        <div class="text-center border-start border-end px-5">
+                            <h6 class="text-muted"><i class="bi bi-droplet-half text-info"></i> Ortam Nemi</h6>
+                            <h5 class="mb-0 fw-bold">%@Model.NemOrani</h5>
+                        </div>
+                        <div class="text-center">
+                            <h6 class="text-muted"><i class="bi bi-clock-history"></i> Son Senkronizasyon</h6>
+                            <h5 class="mb-0 fw-bold">@Model.SonGuncelleme</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            
+            <!-- Sıcaklık Kartı (Progress Bar Eklendi) -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow border-0 bg-white rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-secondary border-bottom pb-2"><i class="bi bi-thermometer-sun text-danger"></i>  Sıcaklık</h5>
+                        
+                        <div class="text-center my-4">
+                            <h1 class="display-2 fw-bold text-dark">@Model.Sicaklik<span class="fs-4 text-muted">°C</span></h1>
+                        </div>
+
+                        <!-- Sıcaklığı bar üzerinde gösterme -->
+                        <div class="progress mt-4" style="height: 15px;">
+                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(Model.Sicaklik * 2)%" aria-valuenow="@Model.Sicaklik" aria-valuemin="0" aria-valuemax="50"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1 text-muted small">
+                            <span>0°C</span>
+                            <span>50°C</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aydınlatma Kartı (Tasarım İyileştirildi) -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow border-0 rounded-4 h-100 @(Model.IsikAcikMi ? "bg-white text-dark" : "bg-dark text-white")">
+                    <div class="card-body text-center p-4">
+                        <h5 class="card-title border-bottom pb-2 @(Model.IsikAcikMi ? "border-light" : "border-secondary")">
+                            <i class="bi bi-lightbulb@(Model.IsikAcikMi ? "-fill text-warning" : "")"></i>   Aydınlatma
+                        </h5>
+                        
+                        <div class="my-4">
+                            <!-- Rozet (Badge) Eklendi -->
+                            <span class="badge rounded-pill fs-5 @(Model.IsikAcikMi ? "bg-success" : "bg-secondary") mb-3">
+                                <i class="bi bi-power"></i> @(Model.IsikAcikMi ? "DEVREDE" : "KAPALI")
+                            </span>
+                        </div>
+
+                        <form method="post" action="/Home/IsigiDegistir">
+                            <input type="hidden" name="mevcutDurum" value="@Model.IsikAcikMi.ToString()" />
+                            <button type="submit" class="btn fw-bold w-100 shadow-sm py-3 fs-5 @(Model.IsikAcikMi ? "btn-dark text-white" : "btn-warning text-dark")">
+                                <i class="bi @(Model.IsikAcikMi ? "bi-toggle-on" : "bi-toggle-off")"></i> @(Model.IsikAcikMi ? "Sistemi Kapat" : "Sistemi Aç")
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Havalandırma Kartı (Süreli Sistem) -->
+            <div class="col-md-4 mb-4">
+                <div id="motorKart" class="card shadow border-0 rounded-4 h-100 @(Model.MotorCalisiyorMu ? "bg-primary text-white" : "bg-white text-dark")">
+                    <div class="card-body text-center p-4">
+                        <h5 class="card-title border-bottom pb-2"><i class="bi bi-fan @(Model.MotorCalisiyorMu ? "fa-spin" : "")"></i> Havalandırma</h5>
+                        
+                        <h2 id="motorDurumYazisi" class="fw-bold my-3 text-uppercase tracking-wider">
+                            @(Model.MotorCalisiyorMu ? "ÇALIŞIYOR" : "Beklemede")
+                        </h2>
+
+                        <form method="post" action="/Home/MotoruTetikle">
+                            <div class="input-group mb-3 px-3 @(Model.MotorCalisiyorMu ? "d-none" : "")">
+                                <input type="number" name="dakikaInput" class="form-control text-center bg-light border-0" value="@Model.AyarlananDakika" min="1" max="60">
+                                <span class="input-group-text border-0 bg-secondary text-white">Dk</span>
+                            </div>
+
+                            <button type="submit" class="btn fw-bold w-100 shadow-sm py-3 fs-5 @(Model.MotorCalisiyorMu ? "btn-light text-primary" : "btn-primary text-white")">
+                                <i class="bi @(Model.MotorCalisiyorMu ? "bi-stop-circle" : "bi-play-circle")"></i> @(Model.MotorCalisiyorMu ? "Motoru Durdur" : "Başlat")
+                            </button>
+                        </form>
+
+                        <div class="mt-4 p-2 rounded-3 @(Model.MotorCalisiyorMu ? "bg-light text-primary" : "bg-light text-secondary")">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-stopwatch"></i> Kalan: <span id="sayacDegeri">00:00</span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript (Geri Sayım İçin) -->
+    <script>
+        var sistemAcikMi = '@Model.MotorCalisiyorMu'.toLowerCase() === 'true';
+        var toplamSaniye = @Model.GeriSayim; 
+        var ayarlananSaniye = toplamSaniye; 
+        var fizikselMotorAktif = true; 
+
+        if (sistemAcikMi) {
+            var sayici = setInterval(function () {
+                toplamSaniye--;
+
+                var dakika = Math.floor(toplamSaniye / 60);
+                var saniye = toplamSaniye % 60;
+                var formatliSure = (dakika < 10 ? "0" + dakika : dakika) + ":" + (saniye < 10 ? "0" + saniye : saniye);
+
+                if (fizikselMotorAktif) {
+                    document.getElementById("sayacDegeri").innerText = formatliSure;
+                    document.getElementById("motorDurumYazisi").innerText = "ÇALIŞIYOR";
+                    document.getElementById("motorKart").className = "card shadow border-0 rounded-4 h-100 bg-primary text-white";
+                } else {
+                    document.getElementById("sayacDegeri").innerText = formatliSure + " (Soğutma)";
+                    document.getElementById("motorDurumYazisi").innerText = "DİNLENİYOR";
+                    document.getElementById("motorKart").className = "card shadow border-0 rounded-4 h-100 bg-warning text-dark";
+                }
+
+                if (toplamSaniye <= 0) {
+                    fizikselMotorAktif = !fizikselMotorAktif; 
+                    toplamSaniye = ayarlananSaniye; 
+                }
+                
+            }, 1000); 
+        } else {
+             document.getElementById("sayacDegeri").innerText = "--:--";
+        }
+    </script>
+</body>
+</html>
