@@ -1,56 +1,90 @@
-﻿
-    using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MovieApp.Web.Models;
+using System;
+using System.Linq; // Veritabanı sorguları için eklendi
 
 namespace MovieApp.Web.Controllers
+{
+    public class HomeController : Controller
     {
-        public class HomeController : Controller
+        // 1. Veritabanı köprümüzü (Context) tanımlıyoruz
+        private readonly AppDbContext _context;
+
+        // 2. Controller her çalıştığında veritabanı bağlantısını içeri alıyoruz (Dependency Injection)
+        public HomeController(AppDbContext context)
         {
-            static EvDurumu sistemDurumu = new EvDurumu
-            {
-                KullaniciAdi = "A. Polat",
-                Sicaklik = 22.5,
-                IsikAcikMi = false,
-                MotorCalisiyorMu = false,
-                GeriSayim = 0, // Başlangıçta 0 olsun
-                AyarlananDakika = 5, // Varsayılan olarak 5 dakika görünsün
-                NemOrani = 45.2,
-                BaglantiKalitesi = "Mükemmel",
-                SonGuncelleme = System.DateTime.Now.ToString("HH:mm:ss") // O anki saati alır
-            };
+            _context = context;
+        }
 
-            public IActionResult Index()
-            {
-                return View(sistemDurumu);
-            }
+        public IActionResult Index()
+        {
+            // Veritabanındaki İLK kaydı getir
+            var systemStatus = _context.HomeStatuses.FirstOrDefault();
 
-            [HttpPost]
-            public IActionResult IsigiDegistir(bool mevcutDurum)
+            // Eğer veritabanı boşsa (ilk kez açılıyorsa), varsayılan verileri oluştur ve SQL'e kaydet
+            if (systemStatus == null)
             {
-                sistemDurumu.IsikAcikMi = !mevcutDurum;
-                return RedirectToAction("Index");
-            }
-
-            // DEĞİŞEN METOD BURASI
-            // Sayfadan gelen 'dakikaInput' değerini de yakalıyoruz
-            [HttpPost]
-            public IActionResult MotoruTetikle(int dakikaInput)
-            {
-                sistemDurumu.MotorCalisiyorMu = !sistemDurumu.MotorCalisiyorMu;
-
-                if (sistemDurumu.MotorCalisiyorMu)
+                systemStatus = new HomeStatus
                 {
-                    // Motor çalıştırılıyorsa kullanıcının girdiği süreyi sisteme kaydet
-                    sistemDurumu.AyarlananDakika = dakikaInput;
-                    sistemDurumu.GeriSayim = dakikaInput * 60; // Dakikayı saniyeye çevirdik
+                    OperatorName = "A. Polat",
+                    Temperature = 13.2,
+                    IsLightOn = false,
+                    IsMotorRunning = false,
+                    Countdown = 0,
+                    SetMinutes = 5,
+                    Humidity = 45.2,
+                    ConnectionQuality = "Mükemmeel",
+                    LastSyncTime = DateTime.Now.ToString("HH:mm:ss")
+                };
+
+                _context.HomeStatuses.Add(systemStatus); // Tabloya ekle
+                _context.SaveChanges(); // SQL'e kaydet
+            }
+
+            return View(systemStatus);
+        }
+
+        [HttpPost]
+        public IActionResult ToggleLight(bool currentState)
+        {
+            // Veritabanından kaydı bul
+            var systemStatus = _context.HomeStatuses.FirstOrDefault();
+
+            if (systemStatus != null)
+            {
+                systemStatus.IsLightOn = !currentState;
+                systemStatus.LastSyncTime = DateTime.Now.ToString("HH:mm:ss"); // Saati güncelle
+                _context.SaveChanges(); // Değişikliği SQL'e kaydet
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult ToggleMotor(int minutesInput)
+        {
+            // Veritabanından kaydı bul
+            var systemStatus = _context.HomeStatuses.FirstOrDefault();
+
+            if (systemStatus != null)
+            {
+                systemStatus.IsMotorRunning = !systemStatus.IsMotorRunning;
+
+                if (systemStatus.IsMotorRunning)
+                {
+                    systemStatus.SetMinutes = minutesInput;
+                    systemStatus.Countdown = minutesInput * 60;
                 }
                 else
                 {
-                    // Motor durduruluyorsa sayacı sıfırla
-                    sistemDurumu.GeriSayim = 0;
+                    systemStatus.Countdown = 0;
                 }
 
-                return RedirectToAction("Index");
+                systemStatus.LastSyncTime = DateTime.Now.ToString("HH:mm:ss"); // Saati güncelle
+                _context.SaveChanges(); // Değişikliği SQL'e kaydet
             }
+
+            return RedirectToAction("Index");
         }
     }
+}
