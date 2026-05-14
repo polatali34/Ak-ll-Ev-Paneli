@@ -2,7 +2,7 @@
 
 namespace MovieApp.Web.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class IlkKurulum : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -20,7 +20,8 @@ namespace MovieApp.Web.Migrations
                     SetMinutes = table.Column<int>(type: "int", nullable: false),
                     Humidity = table.Column<double>(type: "float", nullable: false),
                     ConnectionQuality = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastSyncTime = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    LastSyncTime = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ServoAngle = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

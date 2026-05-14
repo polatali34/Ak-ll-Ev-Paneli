@@ -46,6 +46,9 @@ namespace MovieApp.Web.Migrations
                     b.Property<string>("OperatorName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ServoAngle")
+                        .HasColumnType("int");
+
                     b.Property<int>("SetMinutes")
                         .HasColumnType("int");
 

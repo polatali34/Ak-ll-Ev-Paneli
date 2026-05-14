@@ -12,5 +12,6 @@
         public double Humidity { get; set; }
         public string ConnectionQuality { get; set; }
         public string LastSyncTime { get; set; }
+        public int ServoAngle { get; set; } = 90; // Başlangıç olarak perde yarım açık (90 derece)
     }
 }

@@ -9,8 +9,8 @@ using MovieApp.Web.Models;
 namespace MovieApp.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260506132650_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260514105740_IlkKurulum")]
+    partial class IlkKurulum
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -47,6 +47,9 @@ namespace MovieApp.Web.Migrations
 
                     b.Property<string>("OperatorName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServoAngle")
+                        .HasColumnType("int");
 
                     b.Property<int>("SetMinutes")
                         .HasColumnType("int");

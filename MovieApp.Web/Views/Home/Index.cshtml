@@ -1,173 +1,172 @@
 ﻿@model MovieApp.Web.Models.HomeStatus
+@{
+    Layout = null; 
+}
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistem Paneli | @Model.OperatorName</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
+    <title>Akıllı Ev Kontrol Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); }
+        body { margin: 0; background: linear-gradient(135deg, #e2e8f0 0%, #edf2f7 100%); color: #2d3748; font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .navbar { width: 100%; height: 65px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; font-size: 1.2rem; font-weight: 700; color: #1a202c; box-shadow: 0 4px 20px rgba(0,0,0,0.02); z-index: 10; box-sizing: border-box;}
+        .app-window { background: #ffffff; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); padding: 40px; margin-top: 40px; width: 90%; max-width: 1100px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; padding-bottom: 80px; }
+        .widget-card { background: #ffffff; border-radius: 20px; padding: 25px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #edf2f7; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; text-align: left; width: 100%; box-sizing: border-box; }
+        .widget-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); border-color: #e2e8f0; }
+        .control-btn { cursor: pointer; width: 100%; display: block; outline: none; }
+        .control-btn:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); } 
+        .card-header { display: flex; align-items: center; width: 100%; gap: 15px; }
+        .icon-box { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .icon-temp { background: #fff5f5; color: #e53e3e; }
+        .icon-hum { background: #ebf8ff; color: #3182ce; }
+        .card-title { font-weight: 600; font-size: 1.05rem; color: #4a5568; letter-spacing: 0.3px; margin: 0; }
+        .status-badge { margin-left: auto; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; }
+        .badge-on { background: #e6fffa; color: #319795; }
+        .badge-off { background: rgba(255,255,255,0.1); color: #a0aec0; border: 1px solid #4a5568; }
+        .card-body { margin-top: 20px; display: flex; align-items: baseline; gap: 5px; }
+        .main-value { font-size: 3rem; font-weight: 800; line-height: 1; }
+        .unit { font-size: 1.2rem; font-weight: 600; color: #a0aec0; }
+        .card-light-on { background: linear-gradient(145deg, #ffffff 0%, #fffbf0 100%); border-color: #ecc94b; box-shadow: 0 10px 30px rgba(236, 201, 75, 0.15); }
+        .card-light-on .icon-box { background: #fffff0; border: 1px solid #f6e05e; }
+        .card-motor-on { background: linear-gradient(145deg, #ffffff 0%, #f0fff4 100%); border-color: #48bb78; box-shadow: 0 10px 30px rgba(72, 187, 120, 0.15); }
+        .card-motor-on .icon-box { background: #f0fff4; border: 1px solid #9ae6b4; }
+        .card-off { background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%) !important; border-color: #1a202c !important; color: #f7fafc; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2) !important; }
+        .card-off .card-title { color: #e2e8f0; }
+        .card-off .icon-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        .card-off .main-value { color: #ffffff; opacity: 0.5; }
+        .motor-input-group { margin-top: 20px; display: flex; align-items: center; gap: 10px; width: 100%; }
+        .motor-input { background: #edf2f7; border: 1px solid #cbd5e0; color: #2d3748; font-size: 1rem; padding: 6px 10px; width: 60px; text-align: center; border-radius: 8px; font-weight: 700; transition: all 0.2s; font-family: 'Poppins', sans-serif;}
+        .card-off .motor-input { background: #4a5568; border-color: #2d3748; color: #ffffff; }
+        .motor-input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,0.15); }
+        .slider-wrapper { margin-top: 25px; width: 100%; display: flex; align-items: center; gap: 15px; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: #3182ce; cursor: pointer; margin-top: -8px; box-shadow: 0 4px 10px rgba(49, 130, 206, 0.4); border: 3px solid #ffffff; transition: transform 0.1s; }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 3px; }
+        .btn-set { background: #3182ce; color: white; border: none; border-radius: 8px; padding: 8px 20px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 10px rgba(49, 130, 206, 0.2); transition: background 0.2s; white-space: nowrap; }
+        .btn-set:hover { background: #2b6cb0; }
+        .status-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; border-top: 1px solid #edf2f7; display: flex; justify-content: center; align-items: center; gap: 40px; color: #a0aec0; font-size: 0.85rem; font-weight: 500; border-radius: 0 0 24px 24px; background: #ffffff; }
+        .grid-column { display: flex; flex-direction: column; gap: 20px; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow mb-4">
-        <div class="container">
-            <span class="navbar-brand fw-bold">
-                <i class="bi bi-cpu-fill text-primary"></i> Akıllı Ev Kontrol Paneli
-            </span>
-            <div class="d-flex text-white">
-                <span class="me-3"><i class="bi bi-person-badge"></i> Operatör: @Model.OperatorName</span>
-                
-            </div>
-        </div>
-    </nav>
+    <div class="navbar">
+        <span style="margin-right: 12px; font-size: 1.5rem;">🏠</span> Akıllı Ev Kontrol Paneli
+    </div>
 
-    <div class="container">
+    <div class="app-window">
         
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body d-flex justify-content-around bg-white rounded-4">
-                        <div class="text-center">
-                            <h6 class="text-muted"><i class="bi bi-wifi text-success"></i> Sinyal</h6>
-                            <h5 class="mb-0 fw-bold">@Model.ConnectionQuality</h5>
-                        </div>
-                        <div class="text-center border-start border-end px-5">
-                            <h6 class="text-muted"><i class="bi bi-droplet-half text-info"></i> Ortam Nemi</h6>
-                            <h5 class="mb-0 fw-bold">%@Model.Humidity</h5>
-                        </div>
-                        <div class="text-center">
-                            <h6 class="text-muted"><i class="bi bi-clock-history"></i> Son Senkronizasyon</h6>
-                            <h5 class="mb-0 fw-bold">@Model.LastSyncTime</h5>
-                        </div>
-                    </div>
+        <!-- SOL KOLON -->
+        <div class="grid-column">
+            <div class="widget-card">
+                <div class="card-header">
+                    <div class="icon-box icon-temp">🌡️</div>
+                    <h3 class="card-title">Ortam Sıcaklığı</h3>
+                </div>
+                <div class="card-body">
+                    <span class="main-value" style="color: #e53e3e;">@Model.Temperature</span>
+                    <span class="unit">°C</span>
+                </div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="card-header">
+                    <div class="icon-box icon-hum">💧</div>
+                    <h3 class="card-title">Ortam Nemi</h3>
+                </div>
+                <div class="card-body">
+                    <span class="main-value" style="color: #3182ce;">@Model.Humidity</span>
+                    <span class="unit">%</span>
                 </div>
             </div>
         </div>
 
-        <div class="row">
+        <!-- SAĞ KOLON (HEDEFLER KESİN OLARAK DÜZELTİLDİ) -->
+        <div class="grid-column">
             
-            <div class="col-md-4 mb-4">
-                <div class="card shadow border-0 bg-white rounded-4 h-100">
-                    <div class="card-body p-4">
-                        <h5 class="card-title text-secondary border-bottom pb-2"><i class="bi bi-thermometer-sun text-danger"></i> Sıcaklık</h5>
-                        
-                        <div class="text-center my-4">
-                            <h1 class="display-2 fw-bold text-dark">@Model.Temperature<span class="fs-4 text-muted">°C</span></h1>
-                        </div>
-
-                        <div class="progress mt-4" style="height: 15px;">
-                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(Model.Temperature * 2)%" aria-valuenow="@Model.Temperature" aria-valuemin="0" aria-valuemax="50"></div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1 text-muted small">
-                            <span>0°C</span>
-                            <span>50°C</span>
+            <!-- AYDINLATMA -->
+            <form action="/Home/ToggleLight" method="post" style="margin: 0; padding: 0;">
+                <button type="submit" class="widget-card control-btn @(Model.IsLightOn ? "card-light-on" : "card-off")">
+                    <div class="card-header">
+                        <div class="icon-box" style="font-size: 1.8rem;">@(Model.IsLightOn ? "💡" : "🌑")</div>
+                        <h3 class="card-title">Aydınlatma</h3>
+                        <div class="status-badge @(Model.IsLightOn ? "badge-on" : "badge-off")">
+                            @(Model.IsLightOn ? "AKTİF" : "KAPALI")
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card shadow border-0 rounded-4 h-100 @(Model.IsLightOn ? "bg-white text-dark" : "bg-dark text-white")">
-                    <div class="card-body text-center p-4">
-                        <h5 class="card-title border-bottom pb-2 @(Model.IsLightOn ? "border-light" : "border-secondary")">
-                            <i class="bi bi-lightbulb@(Model.IsLightOn ? "-fill text-warning" : "")"></i> Aydınlatma
-                        </h5>
-                        
-                        <div class="my-4">
-                            <span class="badge rounded-pill fs-5 @(Model.IsLightOn ? "bg-success" : "bg-secondary") mb-3">
-                                <i class="bi bi-power"></i> @(Model.IsLightOn ? "DEVREDE" : "KAPALI")
-                            </span>
-                        </div>
-
-                       
-                        <form method="post" action="/Home/ToggleLight">
-                            <input type="hidden" name="currentState" value="@Model.IsLightOn.ToString()" />
-                            <button type="submit" class="btn fw-bold w-100 shadow-sm py-3 fs-5 @(Model.IsLightOn ? "btn-dark text-white" : "btn-warning text-dark")">
-                                <i class="bi @(Model.IsLightOn ? "bi-toggle-on" : "bi-toggle-off")"></i> @(Model.IsLightOn ? "Sistemi Kapat" : "Sistemi Aç")
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-          <!-- Havalandırma Kartı (Süreli Sistem) -->
-<div class="col-md-4 mb-4">
-    
-    <div id="motorCard" class="card shadow border-0 rounded-4 h-100 @(Model.IsMotorRunning ? "bg-primary text-white" : "bg-white text-dark")">
-        <div class="card-body text-center p-4">
-            <h5 class="card-title border-bottom pb-2"><i class="bi bi-fan @(Model.IsMotorRunning ? "fa-spin" : "")"></i> Fan Motoru</h5>
-            
-            <!-- id="motorDurumYazisi" -> id="motorStatusText" oldu -->
-            <h2 id="motorStatusText" class="fw-bold my-3 text-uppercase tracking-wider">
-                @(Model.IsMotorRunning ? "ÇALIŞIYOR" : "Beklemede")
-            </h2>
-
-            <form method="post" action="/Home/ToggleMotor">
-                <div class="input-group mb-3 px-3 @(Model.IsMotorRunning ? "d-none" : "")">
-                    <input type="number" name="minutesInput" class="form-control text-center bg-light border-0" value="@Model.SetMinutes" min="1" max="60">
-                    <span class="input-group-text border-0 bg-secondary text-white">Dk</span>
-                </div>
-
-                <button type="submit" class="btn fw-bold w-100 shadow-sm py-3 fs-5 @(Model.IsMotorRunning ? "btn-light text-primary" : "btn-primary text-white")">
-                    <i class="bi @(Model.IsMotorRunning ? "bi-stop-circle" : "bi-play-circle")"></i> @(Model.IsMotorRunning ? "Motoru Durdur" : "Başlat")
                 </button>
             </form>
 
-            <div class="mt-4 p-2 rounded-3 @(Model.IsMotorRunning ? "bg-light text-primary" : "bg-light text-secondary")">
-                <!-- id="sayacDegeri" -> id="timerValue" oldu -->
-                <h5 class="mb-0 fw-bold"><i class="bi bi-stopwatch"></i> Kalan: <span id="timerValue">00:00</span></h5>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- MOTOR -->
+            <form action="/Home/ToggleMotor" method="post" style="margin: 0; padding: 0;">
+                <!-- Ana kartı artık button değil DIV yapıyoruz ki her tıklamayı göndermesin -->
+                <div class="widget-card @(Model.IsMotorRunning ? "card-motor-on" : "card-off")">
+                    
+                    <!-- SADECE ÜST KISIM BUTON OLDU (Tıklanıp çalıştırılacak yer burası) -->
+                    <button type="submit" style="background: transparent; border: none; padding: 0; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px; outline: none;">
+                        <div class="icon-box" style="font-size: 1.8rem;">⚙️</div>
+                        <h3 class="card-title">Fan Motoru</h3>
+                        <div class="status-badge @(Model.IsMotorRunning ? "badge-on" : "badge-off")">
+                            @(Model.IsMotorRunning ? "ÇALIŞIYOR" : "DURUYOR")
+                        </div>
+                    </button>
+                    
+                    <!-- ALT KISIM (INPUT) BUTONUN DIŞINDA KALDI -->
+                    <div class="card-body" style="width: 100%; margin-top: 5px;">
+                        @if (!Model.IsMotorRunning)
+                        {
+                            <div class="motor-input-group">
+                                <span style="font-size: 0.9rem; font-weight: 500; opacity: 0.7;">Zamanlayıcı:</span>
+                                <!-- Artık buraya rahatça tıklayıp rakamı değiştirebilirsin -->
+                                <input type="number" name="minutesInput" class="motor-input" value="5" min="1" max="60" />
+                                <span style="font-size: 0.9rem; font-weight: 600;">Dk.</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="main-value" style="font-size: 2rem; color: #2f855a; margin-top: 15px;">
+                                @Model.SetMinutes <span class="unit" style="font-size: 1rem;">Dk. Ayarlandı</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
 
-        </div>
-    </div>
-
-  
-    <script>
-    var isSystemOn = '@Model.IsMotorRunning'.toLowerCase() === 'true';
-    var totalSeconds = @Model.Countdown; 
-    var setSeconds = totalSeconds; 
-    var isPhysicalMotorActive = true; 
-
-    if (isSystemOn) {
-        var timer = setInterval(function () {
-            totalSeconds--;
-
-            var min = Math.floor(totalSeconds / 60);
-            var sec = totalSeconds % 60;
-            var formattedTime = (min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec);
-
-            if (isPhysicalMotorActive) {
+            <!-- AKILLI PERDE -->
+            <div class="widget-card">
+                <div class="card-header">
+                    <div class="icon-box" style="background: #ebf8ff; font-size: 1.8rem;">🪟</div>
+                    <h3 class="card-title">Akıllı Perde</h3>
+                    <div class="status-badge badge-on" style="background: #e2e8f0; color: #4a5568;">
+                        AÇIKLIK: %<span id="servoPercentageDisplay">@Model.ServoAngle</span>
+                    </div>
+                </div>
                 
-                document.getElementById("timerValue").innerText = formattedTime;
-                document.getElementById("motorStatusText").innerText = "ÇALIŞIYOR";
-                document.getElementById("motorCard").className = "card shadow border-0 rounded-4 h-100 bg-primary text-white";
-            } else {
-                document.getElementById("timerValue").innerText = formattedTime + " (Soğutma)";
-                document.getElementById("motorStatusText").innerText = "DİNLENİYOR";
-                document.getElementById("motorCard").className = "card shadow border-0 rounded-4 h-100 bg-warning text-dark";
-            }
+                <form action="/Home/SetServo" method="post" style="width: 100%;">
+                    <div class="slider-wrapper">
+                        <input type="range" name="servoAngle" min="0" max="100" value="@Model.ServoAngle" oninput="document.getElementById('servoPercentageDisplay').innerText = this.value">
+                        <button type="submit" class="btn-set">Ayarla</button>
+                    </div>
+                </form>
+            </div>
 
-            if (totalSeconds <= 0) {
-                isPhysicalMotorActive = !isPhysicalMotorActive; 
-                totalSeconds = setSeconds; 
-            }
-            
-        }, 1000); 
-    } else {
-         document.getElementById("timerValue").innerText = "--:--";
-    }
+        </div>
 
-</script>
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <span>👤 Opr: @Model.OperatorName</span>
+            <span>📡 Sinyal: @Model.ConnectionQuality</span>
+            <span>⏱ Senk: @Model.LastSyncTime</span>
+        </div>
+
+    </div>
+
 </body>
 </html>

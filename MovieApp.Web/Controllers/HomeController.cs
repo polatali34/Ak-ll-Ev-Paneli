@@ -1,90 +1,97 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MovieApp.Web.Models;
 using System;
-using System.Linq; // Veritabanı sorguları için eklendi
+using System.Linq;
+// Eğer senin modellerinin klasörü farklıysa buradaki 'MovieApp.Web.Models' kısmını kendi projene göre ayarla.
 
 namespace MovieApp.Web.Controllers
 {
     public class HomeController : Controller
     {
-        // 1. Veritabanı köprümüzü (Context) tanımlıyoruz
+        // NOT: Eğer veritabanı bağlantı değişkeninin adı _context değil de _db ise aşağıları ona göre değiştir
         private readonly AppDbContext _context;
 
-        // 2. Controller her çalıştığında veritabanı bağlantısını içeri alıyoruz (Dependency Injection)
         public HomeController(AppDbContext context)
         {
             _context = context;
         }
 
+        // 1. ANA SAYFA VE VERİTABANI KONTROLÜ (ÇÖKMEYİ ENGELLEYEN YER)
         public IActionResult Index()
         {
-            // Veritabanındaki İLK kaydı getir
-            var systemStatus = _context.HomeStatuses.FirstOrDefault();
-
-            // Eğer veritabanı boşsa (ilk kez açılıyorsa), varsayılan verileri oluştur ve SQL'e kaydet
-            if (systemStatus == null)
+            // Eğer SQL tablosu bomboşsa, hata vermemesi için ilk satırı biz ekliyoruz
+            if (!_context.HomeStatuses.Any())
             {
-                systemStatus = new HomeStatus
+                var initialData = new HomeStatus
                 {
+                    Temperature = 23.5,
+                    Humidity = 42.0,
                     OperatorName = "A. Polat",
-                    Temperature = 13.2,
+                    
+                    ConnectionQuality = "Mükemmel",
+                    LastSyncTime = DateTime.Now.ToString("HH:mm:ss"),
                     IsLightOn = false,
                     IsMotorRunning = false,
-                    Countdown = 0,
-                    SetMinutes = 5,
-                    Humidity = 45.2,
-                    ConnectionQuality = "Mükemmeel",
-                    LastSyncTime = DateTime.Now.ToString("HH:mm:ss")
+                    ServoAngle = 0
                 };
-
-                _context.HomeStatuses.Add(systemStatus); // Tabloya ekle
-                _context.SaveChanges(); // SQL'e kaydet
+                _context.HomeStatuses.Add(initialData);
+                _context.SaveChanges();
             }
 
-            return View(systemStatus);
+            // Tablodaki güncel veriyi çek
+            var currentStatus = _context.HomeStatuses.First();
+
+            // Sayfa her yenilendiğinde saati güncelleyelim ki sistemin yaşadığını görelim
+            currentStatus.LastSyncTime = DateTime.Now.ToString("HH:mm:ss");
+            _context.SaveChanges();
+
+            // Veriyi HTML'e (View'a) gönder
+            return View(currentStatus);
         }
 
+        // 1. AYDINLATMA (Parametresiz, direkt tersine çeviren Kurşun Geçirmez kod)
         [HttpPost]
-        public IActionResult ToggleLight(bool currentState)
+        public IActionResult ToggleLight()
         {
-            // Veritabanından kaydı bul
-            var systemStatus = _context.HomeStatuses.FirstOrDefault();
+            var status = _context.HomeStatuses.First();
 
-            if (systemStatus != null)
-            {
-                systemStatus.IsLightOn = !currentState;
-                systemStatus.LastSyncTime = DateTime.Now.ToString("HH:mm:ss"); // Saati güncelle
-                _context.SaveChanges(); // Değişikliği SQL'e kaydet
-            }
+            // Eğer true ise false yap, false ise true yap!
+            status.IsLightOn = !status.IsLightOn;
 
+            _context.SaveChanges();
             return RedirectToAction("Index");
         }
 
+        // 2. MOTOR (Senin çalışan versiyonunu sağlama alalım)
         [HttpPost]
-        public IActionResult ToggleMotor(int minutesInput)
+        public IActionResult ToggleMotor(int minutesInput = 5)
         {
-            // Veritabanından kaydı bul
-            var systemStatus = _context.HomeStatuses.FirstOrDefault();
+            var status = _context.HomeStatuses.First();
 
-            if (systemStatus != null)
+            if (!status.IsMotorRunning)
             {
-                systemStatus.IsMotorRunning = !systemStatus.IsMotorRunning;
-
-                if (systemStatus.IsMotorRunning)
-                {
-                    systemStatus.SetMinutes = minutesInput;
-                    systemStatus.Countdown = minutesInput * 60;
-                }
-                else
-                {
-                    systemStatus.Countdown = 0;
-                }
-
-                systemStatus.LastSyncTime = DateTime.Now.ToString("HH:mm:ss"); // Saati güncelle
-                _context.SaveChanges(); // Değişikliği SQL'e kaydet
+                status.IsMotorRunning = true;
+                status.SetMinutes = minutesInput;
+            }
+            else
+            {
+                status.IsMotorRunning = false;
+                status.SetMinutes = 0;
             }
 
+            _context.SaveChanges();
             return RedirectToAction("Index");
         }
+
+        // 3. PERDE 
+        [HttpPost]
+        public IActionResult SetServo(int servoAngle)
+        {
+            var status = _context.HomeStatuses.First();
+            status.ServoAngle = servoAngle;
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+      
     }
 }
