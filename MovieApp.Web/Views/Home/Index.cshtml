@@ -1,172 +1,1739 @@
 ﻿@model MovieApp.Web.Models.HomeStatus
-@{
-    Layout = null; 
-}
 
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('theme') === 'night') {
+                    document.documentElement.classList.add('night-mode');
+                    document.documentElement.style.backgroundColor = '#0f172a';
+                }
+            } catch (e) {
+                console.log("Tema okunamadı:", e);
+            }
+        })();
+    </script>
+
     <title>Akıllı Ev Kontrol Paneli</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { margin: 0; background: linear-gradient(135deg, #e2e8f0 0%, #edf2f7 100%); color: #2d3748; font-family: 'Poppins', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .navbar { width: 100%; height: 65px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; padding: 0 40px; font-size: 1.2rem; font-weight: 700; color: #1a202c; box-shadow: 0 4px 20px rgba(0,0,0,0.02); z-index: 10; box-sizing: border-box;}
-        .app-window { background: #ffffff; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); padding: 40px; margin-top: 40px; width: 90%; max-width: 1100px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; padding-bottom: 80px; }
-        .widget-card { background: #ffffff; border-radius: 20px; padding: 25px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #edf2f7; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; text-align: left; width: 100%; box-sizing: border-box; }
-        .widget-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); border-color: #e2e8f0; }
-        .control-btn { cursor: pointer; width: 100%; display: block; outline: none; }
-        .control-btn:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(0,0,0,0.04); } 
-        .card-header { display: flex; align-items: center; width: 100%; gap: 15px; }
-        .icon-box { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .icon-temp { background: #fff5f5; color: #e53e3e; }
-        .icon-hum { background: #ebf8ff; color: #3182ce; }
-        .card-title { font-weight: 600; font-size: 1.05rem; color: #4a5568; letter-spacing: 0.3px; margin: 0; }
-        .status-badge { margin-left: auto; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.5px; }
-        .badge-on { background: #e6fffa; color: #319795; }
-        .badge-off { background: rgba(255,255,255,0.1); color: #a0aec0; border: 1px solid #4a5568; }
-        .card-body { margin-top: 20px; display: flex; align-items: baseline; gap: 5px; }
-        .main-value { font-size: 3rem; font-weight: 800; line-height: 1; }
-        .unit { font-size: 1.2rem; font-weight: 600; color: #a0aec0; }
-        .card-light-on { background: linear-gradient(145deg, #ffffff 0%, #fffbf0 100%); border-color: #ecc94b; box-shadow: 0 10px 30px rgba(236, 201, 75, 0.15); }
-        .card-light-on .icon-box { background: #fffff0; border: 1px solid #f6e05e; }
-        .card-motor-on { background: linear-gradient(145deg, #ffffff 0%, #f0fff4 100%); border-color: #48bb78; box-shadow: 0 10px 30px rgba(72, 187, 120, 0.15); }
-        .card-motor-on .icon-box { background: #f0fff4; border: 1px solid #9ae6b4; }
-        .card-off { background: linear-gradient(145deg, #1a202c 0%, #2d3748 100%) !important; border-color: #1a202c !important; color: #f7fafc; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2) !important; }
-        .card-off .card-title { color: #e2e8f0; }
-        .card-off .icon-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .card-off .main-value { color: #ffffff; opacity: 0.5; }
-        .motor-input-group { margin-top: 20px; display: flex; align-items: center; gap: 10px; width: 100%; }
-        .motor-input { background: #edf2f7; border: 1px solid #cbd5e0; color: #2d3748; font-size: 1rem; padding: 6px 10px; width: 60px; text-align: center; border-radius: 8px; font-weight: 700; transition: all 0.2s; font-family: 'Poppins', sans-serif;}
-        .card-off .motor-input { background: #4a5568; border-color: #2d3748; color: #ffffff; }
-        .motor-input:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49,130,206,0.15); }
-        .slider-wrapper { margin-top: 25px; width: 100%; display: flex; align-items: center; gap: 15px; }
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: #3182ce; cursor: pointer; margin-top: -8px; box-shadow: 0 4px 10px rgba(49, 130, 206, 0.4); border: 3px solid #ffffff; transition: transform 0.1s; }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 3px; }
-        .btn-set { background: #3182ce; color: white; border: none; border-radius: 8px; padding: 8px 20px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 10px rgba(49, 130, 206, 0.2); transition: background 0.2s; white-space: nowrap; }
-        .btn-set:hover { background: #2b6cb0; }
-        .status-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; border-top: 1px solid #edf2f7; display: flex; justify-content: center; align-items: center; gap: 40px; color: #a0aec0; font-size: 0.85rem; font-weight: 500; border-radius: 0 0 24px 24px; background: #ffffff; }
-        .grid-column { display: flex; flex-direction: column; gap: 20px; }
+        :root {
+            --bg-color: #f0f3f8;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --dark-card-bg: #151a26;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary-blue: #3b82f6;
+            --success-green: #10b981;
+            --danger-red: #ef4444;
+            --warning-yellow: #f59e0b;
+            --border-color: #e2e8f0;
+        }
+
+        html {
+            background-color: #f0f3f8;
+        }
+
+        html.night-mode {
+            background-color: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        html.night-mode body {
+            --bg-color: #0f172a;
+            --sidebar-bg: #111827;
+            --card-bg: #1e293b;
+            --dark-card-bg: #020617;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            background-color: #0f172a;
+        }
+
+        html.night-mode .panel-title h2,
+        html.night-mode .big-value,
+        html.night-mode h4,
+        html.night-mode .section-heading h3,
+        html.night-mode .room-title {
+            color: #f8fafc !important;
+        }
+
+        html.night-mode .card,
+        html.night-mode .footer-bar,
+        html.night-mode .sidebar,
+        html.night-mode .room-card,
+        html.night-mode .scene-card,
+        html.night-mode .sensor-detail-card,
+        html.night-mode .settings-card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+        }
+
+        html.night-mode .top-bar {
+            background: #020617;
+        }
+
+        html.night-mode .light-mini-card {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        html.night-mode .light-mini-card.off {
+            background: #111827;
+            border-color: #334155;
+        }
+
+        html.night-mode .btn-perde-preset,
+        html.night-mode .panel-theme-btn,
+        html.night-mode .room-preset-btn,
+        html.night-mode .scene-btn {
+            background: #334155 !important;
+            color: #f8fafc !important;
+            border-color: #475569 !important;
+        }
+
+        html.night-mode .btn-perde-preset:hover,
+        html.night-mode .room-preset-btn:hover,
+        html.night-mode .scene-btn:hover {
+            background: #475569 !important;
+        }
+
+        html.night-mode .range-slider,
+        html.night-mode .room-range {
+            background: #334155;
+        }
+
+        html.night-mode .footer-bar {
+            color: #94a3b8;
+        }
+
+        html.night-mode .nav-item.active {
+            background-color: #1e3a8a;
+            color: #bfdbfe;
+        }
+
+        html.night-mode .counter-group {
+            background: #111827;
+        }
+
+        html.night-mode .btn-circle,
+        html.night-mode .btn-preset {
+            background: #334155;
+        }
+
+        html.night-mode .btn-preset.active {
+            background: #3b82f6;
+        }
+
+        html.night-mode .empty-panel {
+            background: #111827;
+            border-color: #334155;
+        }
+
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 80px;
+            right: 0;
+            height: 40px;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+
+        .sidebar {
+            width: 80px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 60px;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            z-index: 90;
+        }
+
+        .nav-item {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 0.7rem;
+            gap: 5px;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(59, 130, 246, 0.08);
+            color: var(--primary-blue);
+        }
+
+        .nav-item.active {
+            background-color: #e0e7ff;
+            color: var(--primary-blue);
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 4px 14px 14px 4px;
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 60px 25px 110px 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .panel-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .panel-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-rows: 280px 280px;
+            gap: 20px;
+            flex: none;
+            align-items: stretch;
+            padding-bottom: 35px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+            min-height: 280px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-success {
+            background: #e6f4ea;
+            color: #137333;
+        }
+
+        .badge-danger {
+            background: #fce8e6;
+            color: #c5221f;
+        }
+
+        .badge-info {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .big-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 10px;
+        }
+
+        .big-value span {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .sparkline {
+            width: 100%;
+            height: 50px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .dark-card {
+            background-color: var(--dark-card-bg);
+            color: #fff;
+            border: none;
+        }
+
+        .dark-card .big-value {
+            color: #fff;
+        }
+
+        .motor-form {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin: 0;
+        }
+
+        .motor-state-area {
+            min-height: 145px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .counter-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            background: #1e2538;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .btn-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: #2a344d;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .motor-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-preset {
+            background: #2a344d;
+            border: none;
+            color: #94a3b8;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .btn-preset.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-main {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-main:hover {
+            background: #2563eb;
+        }
+
+        .light-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 5px;
+            flex: 1;
+        }
+
+        .light-mini-card {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            position: relative;
+            overflow: hidden;
+            min-height: 78px;
+        }
+
+        .light-mini-card.off {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .light-mini-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-bg-icon {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            font-size: 3rem;
+            color: @(Model.IsTavanLightOn ? "rgba(245, 158, 11, 0.1)" : "rgba(148, 163, 184, 0.1)");
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .range-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .perde-presets {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+
+        .btn-perde-preset {
+            background: #f1f5f9;
+            border: none;
+            font-size: 0.75rem;
+            padding: 8px 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .btn-perde-preset:hover {
+            background: #e2e8f0;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-heading h3 {
+            color: #0f172a;
+            font-size: 1.25rem;
+        }
+
+        .section-heading p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quick-form {
+            margin: 0;
+        }
+
+        .quick-btn {
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 10px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .quick-btn.blue {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: #fff;
+        }
+
+        .quick-btn.red {
+            background: var(--danger-red);
+            border-color: var(--danger-red);
+            color: #fff;
+        }
+
+        .lighting-page-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            padding-bottom: 35px;
+        }
+
+        .room-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 215px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+        }
+
+        .room-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .room-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .room-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .room-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: #eff6ff;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .room-percent {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .room-percent span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .room-range-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .room-range {
+            flex: 1;
+            height: 7px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .room-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 19px;
+            height: 19px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .room-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+            margin-top: 14px;
+        }
+
+        .room-preset-btn {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: var(--text-main);
+            border-radius: 9px;
+            padding: 8px 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .room-preset-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .sensor-detail-card,
+        .scene-card,
+        .settings-card,
+        .empty-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 22px;
+            min-height: 210px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+        }
+
+        .scene-btn {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: left;
+            color: var(--text-main);
+        }
+
+        .footer-bar {
+            height: 40px;
+            border-top: 1px solid var(--border-color);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            position: fixed;
+            bottom: 0;
+            left: 80px;
+            right: 0;
+            z-index: 120;
+        }
+
+        @@media (max-width: 1200px) {
+            .dashboard-grid,
+            .lighting-page-grid,
+            .detail-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .dashboard-grid {
+                grid-template-rows: none;
+                grid-auto-rows: 280px;
+            }
+
+            .card[style*="grid-column: span 2"] {
+                grid-column: span 2 !important;
+            }
+        }
+
+        @@media (max-width: 760px) {
+            body {
+                overflow: auto;
+            }
+
+            .top-bar {
+                left: 0;
+                height: auto;
+                min-height: 40px;
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 12px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main-container {
+                padding: 85px 15px 110px 15px;
+            }
+
+            .panel-header,
+            .section-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .dashboard-grid,
+            .lighting-page-grid,
+            .detail-grid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+            }
+
+            .card,
+            .card[style*="grid-column: span 2"] {
+                grid-column: span 1 !important;
+                min-height: 280px;
+            }
+
+            .footer-bar {
+                left: 0;
+                height: auto;
+                min-height: 48px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="navbar">
-        <span style="margin-right: 12px; font-size: 1.5rem;">🏠</span> Akıllı Ev Kontrol Paneli
+    <div class="top-bar">
+        <div>
+            <i class="fa-solid fa-cloud-sun"></i> 22°C Dış
+            &nbsp;|&nbsp;
+            <i class="fa-solid fa-wifi"></i> %87
+        </div>
+
+        <div>
+            <i class="fa-solid fa-circle" style="color: #10b981; font-size: 0.6rem;"></i>
+            HUB CONNECTED
+            <span style="opacity:0.5; margin-left:10px;">v2.4.1</span>
+        </div>
+
+        <div>
+            <i class="fa-solid fa-calendar-alt"></i>
+            <span id="dateText"></span>
+            &nbsp;|&nbsp;
+            <i class="fa-solid fa-clock"></i>
+            <span id="clock"></span>
+        </div>
     </div>
 
-    <div class="app-window">
-        
-        <!-- SOL KOLON -->
-        <div class="grid-column">
-            <div class="widget-card">
-                <div class="card-header">
-                    <div class="icon-box icon-temp">🌡️</div>
-                    <h3 class="card-title">Ortam Sıcaklığı</h3>
-                </div>
-                <div class="card-body">
-                    <span class="main-value" style="color: #e53e3e;">@Model.Temperature</span>
-                    <span class="unit">°C</span>
-                </div>
+    <div class="sidebar">
+        <div>
+            <div id="nav-general" class="nav-item active" onclick="showSection('general')">
+                <i class="fa-solid fa-house"></i>Genel
             </div>
-            
-            <div class="widget-card">
-                <div class="card-header">
-                    <div class="icon-box icon-hum">💧</div>
-                    <h3 class="card-title">Ortam Nemi</h3>
-                </div>
-                <div class="card-body">
-                    <span class="main-value" style="color: #3182ce;">@Model.Humidity</span>
-                    <span class="unit">%</span>
-                </div>
+
+            <div id="nav-sensor" class="nav-item" onclick="showSection('sensor')">
+                <i class="fa-solid fa-temperature-half"></i>Sensör
+            </div>
+
+            <div id="nav-lighting" class="nav-item" onclick="showSection('lighting')">
+                <i class="fa-solid fa-lightbulb"></i>Aydınlatma
+            </div>
+
+            <div id="nav-scene" class="nav-item" onclick="showSection('scene')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>Sahne
+            </div>
+
+            <div id="nav-energy" class="nav-item" onclick="showSection('energy')">
+                <i class="fa-solid fa-bolt"></i>Enerji
             </div>
         </div>
 
-        <!-- SAĞ KOLON (HEDEFLER KESİN OLARAK DÜZELTİLDİ) -->
-        <div class="grid-column">
-            
-            <!-- AYDINLATMA -->
-            <form action="/Home/ToggleLight" method="post" style="margin: 0; padding: 0;">
-                <button type="submit" class="widget-card control-btn @(Model.IsLightOn ? "card-light-on" : "card-off")">
-                    <div class="card-header">
-                        <div class="icon-box" style="font-size: 1.8rem;">@(Model.IsLightOn ? "💡" : "🌑")</div>
-                        <h3 class="card-title">Aydınlatma</h3>
-                        <div class="status-badge @(Model.IsLightOn ? "badge-on" : "badge-off")">
-                            @(Model.IsLightOn ? "AKTİF" : "KAPALI")
-                        </div>
-                    </div>
-                </button>
-            </form>
+        <div id="nav-settings" class="nav-item" onclick="showSection('settings')">
+            <i class="fa-solid fa-gear"></i>Ayar
+        </div>
+    </div>
 
-<!-- MOTOR -->
-            <form action="/Home/ToggleMotor" method="post" style="margin: 0; padding: 0;">
-                <!-- Ana kartı artık button değil DIV yapıyoruz ki her tıklamayı göndermesin -->
-                <div class="widget-card @(Model.IsMotorRunning ? "card-motor-on" : "card-off")">
-                    
-                    <!-- SADECE ÜST KISIM BUTON OLDU (Tıklanıp çalıştırılacak yer burası) -->
-                    <button type="submit" style="background: transparent; border: none; padding: 0; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px; outline: none;">
-                        <div class="icon-box" style="font-size: 1.8rem;">⚙️</div>
-                        <h3 class="card-title">Fan Motoru</h3>
-                        <div class="status-badge @(Model.IsMotorRunning ? "badge-on" : "badge-off")">
-                            @(Model.IsMotorRunning ? "ÇALIŞIYOR" : "DURUYOR")
+    <div class="main-container">
+        <div class="panel-header">
+            <div class="panel-title">
+                <h2 id="panelTitle">Akıllı Ev Kontrol Paneli</h2>
+                <p id="panelSubtitle">
+                    Oturma Odası · 4 cihaz aktif · Otomasyon:
+                    <span style="color:var(--success-green); font-weight:600;">
+                        <i class="fa-solid fa-circle-check"></i> Açık
+                    </span>
+                </p>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button type="button" onclick="setTheme('day')" class="panel-theme-btn" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; background:#fff; cursor:pointer;">
+                    <i class="fa-solid fa-sun" style="color:#f59e0b;"></i> Gündüz
+                </button>
+
+                <button type="button" onclick="setTheme('night')" class="panel-theme-btn" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #e2e8f0; background:#fff; cursor:pointer;">
+                    <i class="fa-solid fa-moon" style="color:#3b82f6;"></i> Gece
+                </button>
+            </div>
+        </div>
+
+        <section id="section-general" class="page-section active">
+            <div class="dashboard-grid">
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                                <i class="fa-solid fa-temperature-low"></i> SENSÖR
+                            </p>
+                            <h4 style="font-size:0.95rem;">Ortam Sıcaklığı</h4>
                         </div>
-                    </button>
-                    
-                    <!-- ALT KISIM (INPUT) BUTONUN DIŞINDA KALDI -->
-                    <div class="card-body" style="width: 100%; margin-top: 5px;">
+
+                        <span class="badge badge-success">
+                            <i class="fa-solid fa-check-circle"></i> NORMAL
+                        </span>
+                    </div>
+
+                    <svg class="sparkline" viewBox="0 0 100 30">
+                        <path d="M0 20 Q 25 15, 50 18 T 100 12" fill="none" stroke="#ef4444" stroke-width="2" />
+                    </svg>
+
+                    <div class="big-value">
+                        @Model.Temperature<span>°C</span>
+                    </div>
+
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:auto;">
+                        <i class="fa-solid fa-bullseye"></i> Hedef: 22,0°C
+                        <span style="float:right;">
+                            <i class="fa-solid fa-thermometer-three-quarters"></i> Min/Max: 21,2 / 24,1
+                        </span>
+                    </p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                                <i class="fa-solid fa-droplet"></i> SENSÖR
+                            </p>
+                            <h4 style="font-size:0.95rem;">Ortam Nemi</h4>
+                        </div>
+
+                        <span class="badge badge-info">
+                            <i class="fa-solid fa-heart-pulse"></i> KONFOR
+                        </span>
+                    </div>
+
+                    <svg class="sparkline" viewBox="0 0 100 30">
+                        <path d="M0 15 Q 25 18, 50 12 T 100 14" fill="none" stroke="#3b82f6" stroke-width="2" />
+                    </svg>
+
+                    <div class="big-value">
+                        @Model.Humidity<span>%RH</span>
+                    </div>
+
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:auto;">
+                        <i class="fa-solid fa-check-double"></i> İdeal: 40–55%
+                        <span style="float:right;">
+                            <i class="fa-solid fa-droplet-slash"></i> Çiy Noktası: 9,2°C
+                        </span>
+                    </p>
+                </div>
+
+                <div class="card dark-card">
+                    <form action="/Home/ToggleMotor" method="post" id="motorForm" class="motor-form">
+                        <div class="card-header">
+                            <div>
+                                <p style="font-size:0.75rem; color:#94a3b8; font-weight:700;">
+                                    <i class="fa-solid fa-cogs"></i> CİHAZ • TAVAN
+                                </p>
+                                <h4 style="font-size:0.95rem; color:#fff;">Fan Motoru</h4>
+                            </div>
+
+                            <span class="badge @(Model.IsMotorRunning ? "badge-success" : "badge-danger")">
+                                @(Model.IsMotorRunning ? Html.Raw("<i class='fa-solid fa-play'></i> ÇALIŞIYOR") : Html.Raw("<i class='fa-solid fa-stop'></i> DURUYOR"))
+                            </span>
+                        </div>
+
                         @if (!Model.IsMotorRunning)
                         {
-                            <div class="motor-input-group">
-                                <span style="font-size: 0.9rem; font-weight: 500; opacity: 0.7;">Zamanlayıcı:</span>
-                                <!-- Artık buraya rahatça tıklayıp rakamı değiştirebilirsin -->
-                                <input type="number" name="minutesInput" class="motor-input" value="5" min="1" max="60" />
-                                <span style="font-size: 0.9rem; font-weight: 600;">Dk.</span>
+                            <div class="motor-state-area">
+                                <div class="counter-group">
+                                    <button type="button" class="btn-circle" onclick="var i=document.getElementById('mins'); i.value=Math.max(1, parseInt(i.value || 1)-5);">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+
+                                    <div>
+                                        <input type="number" name="minutesInput" id="mins" value="15" min="1" style="width:40px; background:transparent; border:none; color:#fff; font-size:1.4rem; font-weight:700; text-align:center; outline:none;" />
+                                        <span style="font-size:0.85rem; color:#94a3b8;">
+                                            <i class="fa-solid fa-clock"></i> dk
+                                        </span>
+                                    </div>
+
+                                    <button type="button" class="btn-circle" onclick="var i=document.getElementById('mins'); i.value=parseInt(i.value || 0)+5;">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                <div class="motor-presets">
+                                    <button type="button" class="btn-preset" onclick="document.getElementById('mins').value=5; document.getElementById('motorForm').submit();">
+                                        <i class="fa-solid fa-forward-fast"></i> 5dk
+                                    </button>
+
+                                    <button type="button" class="btn-preset active" onclick="document.getElementById('mins').value=15; document.getElementById('motorForm').submit();">
+                                        <i class="fa-solid fa-clock"></i> 15dk
+                                    </button>
+
+                                    <button type="button" class="btn-preset" onclick="document.getElementById('mins').value=30; document.getElementById('motorForm').submit();">
+                                        <i class="fa-solid fa-clock"></i> 30dk
+                                    </button>
+
+                                    <button type="button" class="btn-preset" onclick="document.getElementById('mins').value=60; document.getElementById('motorForm').submit();">
+                                        <i class="fa-solid fa-clock-rotate-left"></i> 1sa
+                                    </button>
+                                </div>
                             </div>
+
+                            <button type="submit" class="btn-main">
+                                <i class="fa-solid fa-power-off"></i> BAŞLAT
+                            </button>
                         }
                         else
                         {
-                            <div class="main-value" style="font-size: 2rem; color: #2f855a; margin-top: 15px;">
-                                @Model.SetMinutes <span class="unit" style="font-size: 1rem;">Dk. Ayarlandı</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </form>
+                            <div class="motor-state-area">
+                                <div style="text-align:center;">
+                                    <div class="big-value" style="color:#10b981; font-size: 2.2rem;">
+                                        @Model.SetMinutes
+                                        <span style="font-size:1rem; color:#94a3b8;">Dk Kaldı</span>
+                                    </div>
 
-            <!-- AKILLI PERDE -->
-            <div class="widget-card">
-                <div class="card-header">
-                    <div class="icon-box" style="background: #ebf8ff; font-size: 1.8rem;">🪟</div>
-                    <h3 class="card-title">Akıllı Perde</h3>
-                    <div class="status-badge badge-on" style="background: #e2e8f0; color: #4a5568;">
-                        AÇIKLIK: %<span id="servoPercentageDisplay">@Model.ServoAngle</span>
+                                    <p style="font-size:0.8rem; color:#94a3b8; margin-top:5px;">
+                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                        <i class="fa-solid fa-rotate"></i>
+                                        Motor aktif dönüyor...
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-main" style="background:#ef4444;">
+                                <i class="fa-solid fa-stop-circle"></i> DURDUR
+                            </button>
+                        }
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                                <i class="fa-solid fa-lightbulb"></i> AYDINLATMA
+                            </p>
+                            <h4 style="font-size:0.95rem;">Lambalar</h4>
+                        </div>
+
+                        @{
+                            int activeCount =
+                                (Model.IsTavanLightOn ? 1 : 0) +
+                                (Model.IsSarkitLightOn ? 1 : 0) +
+                                (Model.IsOkumaLightOn ? 1 : 0) +
+                                (Model.IsDuvarLightOn ? 1 : 0);
+                        }
+
+                        <span class="badge @(activeCount > 0 ? "badge-success" : "badge-danger")">
+                            <i class="fa-solid fa-power-off"></i> @activeCount / 4 Lamba Açık
+                        </span>
+                    </div>
+
+                    <form action="/Home/ToggleLight" method="post" id="tavanForm">
+                        <input type="hidden" name="lightName" value="Tavan" />
+                    </form>
+
+                    <form action="/Home/ToggleLight" method="post" id="sarkitForm">
+                        <input type="hidden" name="lightName" value="Sarkit" />
+                    </form>
+
+                    <form action="/Home/ToggleLight" method="post" id="okumaForm">
+                        <input type="hidden" name="lightName" value="Okuma" />
+                    </form>
+
+                    <form action="/Home/ToggleLight" method="post" id="duvarForm">
+                        <input type="hidden" name="lightName" value="Duvar" />
+                    </form>
+
+                    <div class="light-grid">
+                        <div class="light-mini-card @(Model.IsTavanLightOn ? "" : "off")" onclick="document.getElementById('tavanForm').submit();">
+                            <i class="fa-solid fa-lightbulb card-bg-icon"></i>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; font-size:0.85rem;">
+                                    <i class="fa-solid fa-house"></i> Tavan
+                                </span>
+
+                                <i class="fa-solid fa-lightbulb" style="color: @(Model.IsTavanLightOn ? "#f59e0b" : "#94a3b8");"></i>
+                            </div>
+
+                            <span style="font-size:0.7rem; color:var(--text-muted);">
+                                @(Model.IsTavanLightOn ? "AÇIK - %80" : "KAPALI")
+                            </span>
+                        </div>
+
+                        <div class="light-mini-card @(Model.IsSarkitLightOn ? "" : "off")" onclick="document.getElementById('sarkitForm').submit();">
+                            <i class="fa-solid fa-lightbulb card-bg-icon"></i>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; font-size:0.85rem;">
+                                    <i class="fa-solid fa-utensils"></i> Sarkıt
+                                </span>
+
+                                <i class="fa-solid fa-lightbulb" style="color: @(Model.IsSarkitLightOn ? "#f59e0b" : "#94a3b8");"></i>
+                            </div>
+
+                            <span style="font-size:0.7rem; color:var(--text-muted);">
+                                @(Model.IsSarkitLightOn ? "AÇIK - %60" : "KAPALI")
+                            </span>
+                        </div>
+
+                        <div class="light-mini-card @(Model.IsOkumaLightOn ? "" : "off")" onclick="document.getElementById('okumaForm').submit();">
+                            <i class="fa-solid fa-lightbulb card-bg-icon"></i>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; font-size:0.85rem;">
+                                    <i class="fa-solid fa-book-open-reader"></i> Okuma
+                                </span>
+
+                                <i class="fa-solid fa-lightbulb" style="color: @(Model.IsOkumaLightOn ? "#f59e0b" : "#94a3b8");"></i>
+                            </div>
+
+                            <span style="font-size:0.7rem; color:var(--text-muted);">
+                                @(Model.IsOkumaLightOn ? "AÇIK - %100" : "KAPALI")
+                            </span>
+                        </div>
+
+                        <div class="light-mini-card @(Model.IsDuvarLightOn ? "" : "off")" onclick="document.getElementById('duvarForm').submit();">
+                            <i class="fa-solid fa-lightbulb card-bg-icon"></i>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; font-size:0.85rem;">
+                                    <i class="fa-solid fa-archway"></i> Duvar
+                                </span>
+
+                                <i class="fa-solid fa-lightbulb" style="color: @(Model.IsDuvarLightOn ? "#f59e0b" : "#94a3b8");"></i>
+                            </div>
+
+                            <span style="font-size:0.7rem; color:var(--text-muted);">
+                                @(Model.IsDuvarLightOn ? "AÇIK - %40" : "KAPALI")
+                            </span>
+                        </div>
                     </div>
                 </div>
-                
-                <form action="/Home/SetServo" method="post" style="width: 100%;">
-                    <div class="slider-wrapper">
-                        <input type="range" name="servoAngle" min="0" max="100" value="@Model.ServoAngle" oninput="document.getElementById('servoPercentageDisplay').innerText = this.value">
-                        <button type="submit" class="btn-set">Ayarla</button>
-                    </div>
-                </form>
+
+                <div class="card" style="grid-column: span 2;">
+                    <form action="/Home/SetServo" method="post" id="perdeForm" style="width:100%; margin:0;">
+                        <div class="card-header">
+                            <div>
+                                <p style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">
+                                    <i class="fa-solid fa-door-open"></i> CİHAZ
+                                </p>
+                                <h4 style="font-size:0.95rem;">Akıllı Perde</h4>
+                            </div>
+
+                            <span class="badge badge-info">
+                                <i class="fa-solid fa-window-restore"></i> AÇIKLIK %@Model.ServoAngle
+                            </span>
+                        </div>
+
+                        <div style="display: flex; gap:20px; align-items: center; margin-top: 15px;">
+                            <div style="width:120px; height:90px; background:#e2e8f0; border-radius:12px; display:flex; justify-content:space-between; padding:5px; overflow:hidden; border:1px solid #cbd5e1; position:relative;">
+                                <i class="fa-solid fa-window-maximize" style="position:absolute; top:5px; left:5px; font-size: 0.8rem; color:rgba(148, 163, 184, 0.4)"></i>
+
+                                <div style="width: @(50 - (Model.ServoAngle / 2))%; height:100%; background:#94a3b8; border-radius:4px; transition:0.3s;"></div>
+                                <div style="width: @(50 - (Model.ServoAngle / 2))%; height:100%; background:#94a3b8; border-radius:4px; transition:0.3s;"></div>
+                            </div>
+
+                            <div style="flex:1;">
+                                <div class="slider-container">
+                                    <button type="button" class="btn-circle" style="background:#f1f5f9; color:#000;" onclick="var r=document.getElementById('perdeRange'); r.value=Math.max(0, parseInt(r.value)-10); document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+
+                                    <input type="range" name="servoAngle" id="perdeRange" class="range-slider" min="0" max="100" value="@Model.ServoAngle" onchange="document.getElementById('perdeForm').submit();" oninput="document.getElementById('perdeLabel').innerText = this.value + '%'" />
+
+                                    <button type="button" class="btn-circle" style="background:#f1f5f9; color:#000;" onclick="var r=document.getElementById('perdeRange'); r.value=Math.min(100, parseInt(r.value)+10); document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+
+                                    <span id="perdeLabel" style="font-weight:700; width:55px; text-align:right;">
+                                        @Model.ServoAngle%
+                                    </span>
+                                </div>
+
+                                <div class="perde-presets">
+                                    <button type="button" class="btn-perde-preset" onclick="document.getElementById('perdeRange').value=0; document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-xmark"></i> Kapat
+                                    </button>
+
+                                    <button type="button" class="btn-perde-preset" onclick="document.getElementById('perdeRange').value=25; document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-align-left"></i> Az
+                                    </button>
+
+                                    <button type="button" class="btn-perde-preset" onclick="document.getElementById('perdeRange').value=50; document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-pause"></i> Yarı
+                                    </button>
+
+                                    <button type="button" class="btn-perde-preset" onclick="document.getElementById('perdeRange').value=75; document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-align-right"></i> Çok
+                                    </button>
+
+                                    <button type="button" class="btn-perde-preset" onclick="document.getElementById('perdeRange').value=100; document.getElementById('perdeForm').submit();">
+                                        <i class="fa-solid fa-expand"></i> Tam Aç
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="section-lighting" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h3><i class="fa-solid fa-lightbulb"></i> Aydınlatma Kontrolü</h3>
+                    <p>Tüm odaların ışık parlaklığını buradan ayarlayabilirsin.</p>
+                </div>
+
+                <div class="section-actions">
+                    <form action="/Home/SetAllRoomBrightness" method="post" class="quick-form" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                        <input type="hidden" name="brightness" value="0" />
+                        <button type="submit" class="quick-btn red">
+                            <i class="fa-solid fa-power-off"></i> Tümünü Kapat
+                        </button>
+                    </form>
+
+                    <form action="/Home/SetAllRoomBrightness" method="post" class="quick-form" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                        <input type="hidden" name="brightness" value="100" />
+                        <button type="submit" class="quick-btn blue">
+                            <i class="fa-solid fa-sun"></i> Tümünü %100 Yap
+                        </button>
+                    </form>
+                </div>
             </div>
 
-        </div>
+            <div class="lighting-page-grid">
 
-        <!-- STATUS BAR -->
-        <div class="status-bar">
-            <span>👤 Opr: @Model.OperatorName</span>
-            <span>📡 Sinyal: @Model.ConnectionQuality</span>
-            <span>⏱ Senk: @Model.LastSyncTime</span>
-        </div>
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormLivingRoom" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="LivingRoom" />
 
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Oturma Odası</div>
+                            <div class="room-subtitle">Ana yaşam alanı</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-couch"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelLivingRoom">@Model.LivingRoomBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessLivingRoom" name="brightness" class="room-range" min="0" max="100" value="@Model.LivingRoomBrightness" oninput="updateRoomLabel('LivingRoom', this.value)" onchange="submitRoomForm('LivingRoom')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('LivingRoom', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('LivingRoom', 30)">Loş</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('LivingRoom', 70)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('LivingRoom', 100)">Parlak</button>
+                    </div>
+                </form>
+
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormKitchen" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="Kitchen" />
+
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Mutfak</div>
+                            <div class="room-subtitle">Tezgah ve yemek alanı</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelKitchen">@Model.KitchenBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessKitchen" name="brightness" class="room-range" min="0" max="100" value="@Model.KitchenBrightness" oninput="updateRoomLabel('Kitchen', this.value)" onchange="submitRoomForm('Kitchen')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Kitchen', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Kitchen', 30)">Loş</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Kitchen', 70)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Kitchen', 100)">Parlak</button>
+                    </div>
+                </form>
+
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormBedroom" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="Bedroom" />
+
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Yatak Odası</div>
+                            <div class="room-subtitle">Gece ve uyku modu</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-bed"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelBedroom">@Model.BedroomBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessBedroom" name="brightness" class="room-range" min="0" max="100" value="@Model.BedroomBrightness" oninput="updateRoomLabel('Bedroom', this.value)" onchange="submitRoomForm('Bedroom')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bedroom', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bedroom', 15)">Gece</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bedroom', 45)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bedroom', 80)">Parlak</button>
+                    </div>
+                </form>
+
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormBathroom" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="Bathroom" />
+
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Banyo</div>
+                            <div class="room-subtitle">Ayna ve tavan ışığı</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-shower"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelBathroom">@Model.BathroomBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessBathroom" name="brightness" class="room-range" min="0" max="100" value="@Model.BathroomBrightness" oninput="updateRoomLabel('Bathroom', this.value)" onchange="submitRoomForm('Bathroom')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bathroom', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bathroom', 30)">Loş</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bathroom', 75)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Bathroom', 100)">Parlak</button>
+                    </div>
+                </form>
+
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormHall" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="Hall" />
+
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Koridor</div>
+                            <div class="room-subtitle">Geçiş alanı</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-road"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelHall">@Model.HallBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessHall" name="brightness" class="room-range" min="0" max="100" value="@Model.HallBrightness" oninput="updateRoomLabel('Hall', this.value)" onchange="submitRoomForm('Hall')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Hall', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Hall', 20)">Gece</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Hall', 50)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Hall', 100)">Parlak</button>
+                    </div>
+                </form>
+
+                <form action="/Home/SetRoomBrightness" method="post" id="roomFormBalcony" class="room-card" onsubmit="setActiveSectionBeforeSubmit('lighting')">
+                    <input type="hidden" name="roomName" value="Balcony" />
+
+                    <div class="room-top">
+                        <div>
+                            <div class="room-title">Balkon</div>
+                            <div class="room-subtitle">Dış alan ışığı</div>
+                        </div>
+                        <div class="room-icon"><i class="fa-solid fa-tree"></i></div>
+                    </div>
+
+                    <div class="room-percent">
+                        <span id="roomLabelBalcony">@Model.BalconyBrightness</span><span>%</span>
+                    </div>
+
+                    <div class="room-range-row">
+                        <i class="fa-solid fa-moon" style="color:var(--text-muted);"></i>
+                        <input type="range" id="roomBrightnessBalcony" name="brightness" class="room-range" min="0" max="100" value="@Model.BalconyBrightness" oninput="updateRoomLabel('Balcony', this.value)" onchange="submitRoomForm('Balcony')" />
+                        <i class="fa-solid fa-sun" style="color:#f59e0b;"></i>
+                    </div>
+
+                    <div class="room-presets">
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Balcony', 0)">Kapalı</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Balcony', 25)">Loş</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Balcony', 60)">Normal</button>
+                        <button type="button" class="room-preset-btn" onclick="setRoomBrightness('Balcony', 100)">Parlak</button>
+                    </div>
+                </form>
+
+            </div>
+        </section>
+
+        <section id="section-sensor" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h3><i class="fa-solid fa-temperature-half"></i> Sensörler</h3>
+                    <p>Sıcaklık, nem ve bağlantı durumu.</p>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">SICAKLIK</p>
+                    <div class="big-value">@Model.Temperature<span>°C</span></div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Ortam sıcaklığı normal seviyede.</p>
+                </div>
+
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">NEM</p>
+                    <div class="big-value">@Model.Humidity<span>%RH</span></div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Konfor aralığında.</p>
+                </div>
+
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">BAĞLANTI</p>
+                    <div class="big-value" style="font-size:2rem;">@Model.ConnectionQuality</div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Son eşitleme: @Model.LastSyncTime</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-scene" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Sahne Modları</h3>
+                    <p>Hazır modlarla panel görünümünü ve kullanım şeklini değiştir.</p>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="scene-card">
+                    <h4><i class="fa-solid fa-sun" style="color:#f59e0b;"></i> Gündüz Modu</h4>
+                    <p style="color:var(--text-muted); margin-top:8px;">Paneli açık temaya alır.</p>
+                    <button type="button" class="scene-btn" onclick="setTheme('day')">
+                        <i class="fa-solid fa-play"></i> Gündüz Modunu Başlat
+                    </button>
+                </div>
+
+                <div class="scene-card">
+                    <h4><i class="fa-solid fa-moon" style="color:#3b82f6;"></i> Gece Modu</h4>
+                    <p style="color:var(--text-muted); margin-top:8px;">Paneli koyu temaya alır.</p>
+                    <button type="button" class="scene-btn" onclick="setTheme('night')">
+                        <i class="fa-solid fa-play"></i> Gece Modunu Başlat
+                    </button>
+                </div>
+
+                <div class="scene-card">
+    <h4><i class="fa-solid fa-tv" style="color:#8b5cf6;"></i> Film Modu</h4>
+
+    <p style="color:var(--text-muted); margin-top:8px;">
+        Perde kapanır, motor durur, ortam loş moda geçer ve panel gece temasına alınır.
+    </p>
+
+    <div style="margin-top:14px; display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; font-size:0.78rem; color:var(--text-muted);">
+        <div><i class="fa-solid fa-window-maximize"></i> Perde: Kapalı</div>
+        <div><i class="fa-solid fa-fan"></i> Motor: Kapalı</div>
+        <div><i class="fa-solid fa-lightbulb"></i> Salon: %20</div>
+        <div><i class="fa-solid fa-road"></i> Koridor: %15</div>
     </div>
+
+    <form action="/Home/ApplyMovieMode" method="post" style="margin:0;" onsubmit="activateMovieModeBeforeSubmit()">
+        <button type="submit" class="scene-btn" style="background:#8b5cf6; color:#fff; border-color:#8b5cf6;">
+            <i class="fa-solid fa-play"></i> Film Modunu Başlat
+        </button>
+    </form>
+</div>
+        </section>
+
+        <section id="section-energy" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h3><i class="fa-solid fa-bolt"></i> Enerji Takibi</h3>
+                    <p>Günlük tüketim ve cihaz durumları.</p>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">BUGÜN</p>
+                    <div class="big-value">3,2<span>kWh</span></div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Tahmini günlük tüketim.</p>
+                </div>
+
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">AKTİF CİHAZ</p>
+                    <div class="big-value">4<span>adet</span></div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Panelde aktif görünen cihaz sayısı.</p>
+                </div>
+
+                <div class="sensor-detail-card">
+                    <p style="color:var(--text-muted); font-weight:700;">UYARI</p>
+                    <div class="big-value" style="font-size:2rem; color:var(--success-green);">Yok</div>
+                    <p style="color:var(--text-muted); margin-top:10px;">Enerji durumu normal.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-settings" class="page-section">
+            <div class="section-heading">
+                <div>
+                    <h3><i class="fa-solid fa-gear"></i> Ayarlar</h3>
+                    <p>Panel ayarları ve sistem bilgileri.</p>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="settings-card">
+                    <h4>Operatör</h4>
+                    <p style="color:var(--text-muted); margin-top:8px;">@Model.OperatorName</p>
+                </div>
+
+                <div class="settings-card">
+                    <h4>MQTT Broker</h4>
+                    <p style="color:var(--text-muted); margin-top:8px;">broker.local:8883</p>
+                </div>
+
+                <div class="settings-card">
+                    <h4>Son Senkronizasyon</h4>
+                    <p style="color:var(--text-muted); margin-top:8px;">@Model.LastSyncTime</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="footer-bar">
+        <div>
+            <i class="fa-solid fa-user-circle"></i> Operatör:
+            <strong>@Model.OperatorName</strong>
+            &nbsp;|&nbsp;
+            <i class="fa-solid fa-satellite-dish"></i> Sinyal:
+            <span style="color:var(--success-green);">
+                <i class="fa-solid fa-check-double"></i> Mükemmel (-42 dBm)
+            </span>
+        </div>
+
+        <div>
+            <i class="fa-solid fa-network-wired"></i> MQTT:
+            <strong><i class="fa-solid fa-unlink"></i> broker.local:8883</strong>
+            &nbsp;|&nbsp;
+            Bugün: <i class="fa-solid fa-bolt"></i> 3,2 kWh
+            &nbsp;|&nbsp;
+            Uyarı:
+            <span style="color:var(--success-green);">
+                <i class="fa-solid fa-check"></i> Yok
+            </span>
+        </div>
+    </div>
+
+    <script>
+        function updateDateTime() {
+            var now = new Date();
+
+            var days = [
+                "Pazar",
+                "Pazartesi",
+                "Salı",
+                "Çarşamba",
+                "Perşembe",
+                "Cuma",
+                "Cumartesi"
+            ];
+
+            var months = [
+                "Ocak",
+                "Şubat",
+                "Mart",
+                "Nisan",
+                "Mayıs",
+                "Haziran",
+                "Temmuz",
+                "Ağustos",
+                "Eylül",
+                "Ekim",
+                "Kasım",
+                "Aralık"
+            ];
+
+            var day = now.getDate();
+            var month = months[now.getMonth()];
+            var year = now.getFullYear();
+            var weekDay = days[now.getDay()];
+
+            var h = now.getHours();
+            var m = now.getMinutes();
+            var s = now.getSeconds();
+
+            h = h < 10 ? '0' + h : h;
+            m = m < 10 ? '0' + m : m;
+            s = s < 10 ? '0' + s : s;
+
+            var dateText = document.getElementById('dateText');
+            var clock = document.getElementById('clock');
+
+            if (dateText) {
+                dateText.innerHTML = day + " " + month + " " + year + " - " + weekDay;
+            }
+
+            if (clock) {
+                clock.innerHTML = h + ":" + m + ":" + s;
+            }
+        }
+
+        function setTheme(mode) {
+            if (mode === 'night') {
+                document.documentElement.classList.add('night-mode');
+                document.documentElement.style.backgroundColor = '#0f172a';
+                localStorage.setItem('theme', 'night');
+            } else {
+                document.documentElement.classList.remove('night-mode');
+                document.documentElement.style.backgroundColor = '#f0f3f8';
+                localStorage.setItem('theme', 'day');
+            }
+        }
+
+        function setActiveSectionBeforeSubmit(sectionName) {
+            localStorage.setItem('activeSection', sectionName);
+        }
+
+        function activateMovieModeBeforeSubmit() {
+    localStorage.setItem('activeSection', 'scene');
+    localStorage.setItem('theme', 'night');
+
+    document.documentElement.classList.add('night-mode');
+    document.documentElement.style.backgroundColor = '#0f172a';
+}
+
+        function showSection(sectionName) {
+            var sections = document.querySelectorAll('.page-section');
+            var navItems = document.querySelectorAll('.nav-item');
+
+            sections.forEach(function (section) {
+                section.classList.remove('active');
+            });
+
+            navItems.forEach(function (item) {
+                item.classList.remove('active');
+            });
+
+            var targetSection = document.getElementById('section-' + sectionName);
+            var targetNav = document.getElementById('nav-' + sectionName);
+
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            if (targetNav) {
+                targetNav.classList.add('active');
+            }
+
+            localStorage.setItem('activeSection', sectionName);
+            updatePanelTitle(sectionName);
+        }
+
+        function updatePanelTitle(sectionName) {
+            var title = document.getElementById('panelTitle');
+            var subtitle = document.getElementById('panelSubtitle');
+
+            if (!title || !subtitle) {
+                return;
+            }
+
+            if (sectionName === 'general') {
+                title.innerHTML = "Akıllı Ev Kontrol Paneli";
+                subtitle.innerHTML = "Oturma Odası · 4 cihaz aktif · Otomasyon: <span style='color:var(--success-green); font-weight:600;'><i class='fa-solid fa-circle-check'></i> Açık</span>";
+            }
+
+            if (sectionName === 'sensor') {
+                title.innerHTML = "Sensör Paneli";
+                subtitle.innerHTML = "Sıcaklık, nem ve bağlantı verileri";
+            }
+
+            if (sectionName === 'lighting') {
+                title.innerHTML = "Aydınlatma Paneli";
+                subtitle.innerHTML = "Tüm odaların parlaklığını ayrı ayrı ayarla";
+            }
+
+            if (sectionName === 'scene') {
+                title.innerHTML = "Sahne Modları";
+                subtitle.innerHTML = "Gündüz, gece ve özel ev modları";
+            }
+
+            if (sectionName === 'energy') {
+                title.innerHTML = "Enerji Takibi";
+                subtitle.innerHTML = "Anlık tüketim ve enerji durumu";
+            }
+
+            if (sectionName === 'settings') {
+                title.innerHTML = "Sistem Ayarları";
+                subtitle.innerHTML = "Panel, operatör ve bağlantı ayarları";
+            }
+        }
+
+        function updateRoomLabel(roomName, value) {
+            var label = document.getElementById('roomLabel' + roomName);
+
+            if (label) {
+                label.innerHTML = value;
+            }
+        }
+
+        function submitRoomForm(roomName) {
+            setActiveSectionBeforeSubmit('lighting');
+
+            var form = document.getElementById('roomForm' + roomName);
+
+            if (form) {
+                form.submit();
+            }
+        }
+
+        function setRoomBrightness(roomName, value) {
+            var range = document.getElementById('roomBrightness' + roomName);
+
+            if (range) {
+                range.value = value;
+                updateRoomLabel(roomName, value);
+            }
+
+            submitRoomForm(roomName);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            var savedSection = localStorage.getItem('activeSection');
+
+            if (!savedSection) {
+                savedSection = 'general';
+            }
+
+            showSection(savedSection);
+        });
+    </script>
 
 </body>
 </html>

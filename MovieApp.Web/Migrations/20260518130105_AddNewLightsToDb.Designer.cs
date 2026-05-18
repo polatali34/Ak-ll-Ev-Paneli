@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieApp.Web.Models;
 
 namespace MovieApp.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518130105_AddNewLightsToDb")]
+    partial class AddNewLightsToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,23 +27,8 @@ namespace MovieApp.Web.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("BalconyBrightness")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BathroomBrightness")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BedroomBrightness")
-                        .HasColumnType("int");
-
                     b.Property<string>("ConnectionQuality")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Countdown")
-                        .HasColumnType("int");
-
-                    b.Property<int>("HallBrightness")
-                        .HasColumnType("int");
 
                     b.Property<double>("Humidity")
                         .HasColumnType("float");
@@ -64,14 +51,8 @@ namespace MovieApp.Web.Migrations
                     b.Property<bool>("IsTavanLightOn")
                         .HasColumnType("bit");
 
-                    b.Property<int>("KitchenBrightness")
-                        .HasColumnType("int");
-
                     b.Property<string>("LastSyncTime")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LivingRoomBrightness")
-                        .HasColumnType("int");
 
                     b.Property<string>("OperatorName")
                         .HasColumnType("nvarchar(max)");
